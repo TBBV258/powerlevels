@@ -585,134 +585,7 @@
 
         // 4. Update UI with Data (the existing updateUI function remains unchanged)
 
-        // 1. Initialize Firebase and Handle Authentication
-        async function initFirebaseAndAuth() {
-            try {
-                const app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-
-                onAuthStateChanged(auth, async (user) => {
-                    if (user) {
-                        userId = user.uid;
-                        USER_ID_DISPLAY.textContent = userId;
-                        isAuthReady = true;
-                        showStatus("Authentication successful. Matrix online.");
-                        setupSnapshotListener();
-                    } else {
-                        if (initialAuthToken) {
-                            // Use custom token if provided
-                            await signInWithCustomToken(auth, initialAuthToken);
-                        } else {
-                            // Fallback to anonymous sign-in
-                            await signInAnonymously(auth);
-                        }
-                    }
-                });
-            } catch (error) {
-                console.error("Firebase initialization or authentication failed:", error);
-                showStatus(`Initialization Error: ${error.message}`, true);
-            }
-        }
-
-        // 2. Setup Real-time Data Listener
-        function setupSnapshotListener() {
-            if (!db || !userId || !isAuthReady) {
-                console.warn("Firestore not ready. Cannot set up listener.");
-                return;
-            }
-
-            // Path: /artifacts/{appId}/users/{userId}/attributes/stats
-            const docRef = doc(db, 'artifacts', appId, 'users', userId, 'attributes', 'stats');
-
-            onSnapshot(docRef, (docSnap) => {
-                if (docSnap.exists()) {
-                    updateUI(docSnap.data());
-                    showStatus("Stats and Power Level retrieved from the Matrix.");
-                } else {
-                    updateUI({});
-                    showStatus("No saved base stats found. Use the form to save your first set.");
-                }
-            }, (error) => {
-                console.error("Firestore snapshot error:", error);
-                showStatus(`Data Load Error: ${error.message}`, true);
-            });
-        }
-
-        // 3. Update UI with Data
-        function updateUI(data) {
-            STATS_DISPLAY.innerHTML = '';
-            INITIAL_LOAD_MSG.classList.add('hidden');
-            let hasData = false;
-            
-            // Retrieve or default Level
-            const level = data.Level || 1; 
-
-            // 3a. Update Power Level
-            const powerLevel = calculatePowerLevel(data);
-            POWER_LEVEL_VALUE.textContent = powerLevel.toLocaleString();
-
-            // 3b. Update individual stats
-            
-            // Update the Level input field
-            const levelInput = document.getElementById('Level');
-            if (levelInput) {
-                // Always update the input field with the latest saved data (or default)
-                levelInput.value = data.Level !== undefined ? data.Level : 1; 
-            }
-
-            // First, display the Level
-            const levelDisplay = document.createElement('div');
-            levelDisplay.className = 'text-2xl font-black text-sky-400 flex justify-between border-b border-sky-600 pb-2 mb-4';
-            levelDisplay.innerHTML = `
-                <span>CURRENT LEVEL:</span>
-                <span class="text-yellow-300">${level}</span>
-            `;
-            STATS_DISPLAY.appendChild(levelDisplay);
-
-            BASE_STATS.forEach(attr => {
-                // Get the base value, default to 0 if not present for calculation consistency
-                const baseValue = data[attr] !== undefined ? data[attr] : 0; 
-                
-                // Update input field with loaded base value
-                const inputElement = document.getElementById(attr);
-                if (inputElement) {
-                    // Update input field with latest saved data (or default)
-                    inputElement.value = data[attr] !== undefined ? data[attr] : 10; 
-                }
-
-                if (data[attr] !== undefined) {
-                    hasData = true;
-                    const effectiveValue = calculateEffectiveStat(baseValue, level);
-
-                    const displayItem = document.createElement('div');
-                    displayItem.className = 'flex flex-col md:flex-row md:justify-between items-start md:items-center p-2 bg-gray-700/30 rounded-lg shadow-inner';
-                    displayItem.innerHTML = `
-                        <div class="flex flex-col">
-                            <span class="font-bold text-gray-300 text-lg">${attr}</span>
-                            <span class="text-sm text-gray-400">Base: ${baseValue}</span>
-                        </div>
-                        <div class="mt-2 md:mt-0">
-                            <span class="text-sm text-sky-300 mr-2">Effective:</span>
-                            <span class="effective-value">${effectiveValue.toLocaleString()}</span>
-                        </div>
-                    `;
-                    STATS_DISPLAY.appendChild(displayItem);
-                }
-            });
-            
-            if (!hasData && level === 1) { // Only show message if no stats AND default level
-                STATS_DISPLAY.innerHTML += '<p class="text-gray-500 italic mt-4 text-center">Data Matrix empty. Waiting for primary input...</p>';
-            }
-
-            // 3c. Update timestamp
-            if (data.updatedAt) {
-                let timestamp = data.updatedAt.toDate ? data.updatedAt.toDate() : new Date(data.updatedAt);
-                LAST_UPDATED.textContent = `Last Transmission: ${timestamp.toLocaleString()}`;
-            } else {
-                LAST_UPDATED.textContent = '';
-            }
-        }
+        // (Firebase logic removed) Supabase implementation handles auth, fetch, realtime and updateUI above
 
         // 5. Handle Form Submission and Save Data (upsert into Supabase)
         async function saveStats(event) {
@@ -781,20 +654,7 @@
             ANALYZE_STRATEGY_BTN.addEventListener('click', analyzeCombatStrategy);
         };
 
-        // 5. Initial App Load
-        window.onload = function() {
-            if (Object.keys(firebaseConfig).length === 0) {
-                showStatus("Error: Firebase configuration is missing. Matrix cannot initialize.", true);
-                USER_ID_DISPLAY.textContent = 'N/A';
-                return;
-            }
-            initFirebaseAndAuth();
-            STATS_FORM.addEventListener('submit', saveStats);
-            
-            // Attach event listeners for LLM features
-            GENERATE_LORE_BTN.addEventListener('click', generateCharacterLore);
-            ANALYZE_STRATEGY_BTN.addEventListener('click', analyzeCombatStrategy);
-        };
+        
 
     </script>
 </body>
