@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Epic Attribute Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        /* Deep space background */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a1a2e; /* Deep Navy Blue */
+            color: #e5e7eb; /* Light Gray text */
+        }
+        /* Custom card style for depth and glow */
+        .card {
+            background-color: #272742; /* Dark Purple-Blue */
+            border: 1px solid #3f3f6c;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4), 0 10px 25px rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            border-radius: 1rem; /* xl rounded */
+        }
+        .stat-input {
+            transition: all 0.2s;
+            background-color: #3b3b5c;
+            border-color: #4f4f7d;
+            color: #e5e7eb;
+        }
+        .stat-input:focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5); /* Blue-500 shadow */
+            border-color: #3b82f6;
+        }
+        /* Dramatic Power Level Display */
+        .power-level-display {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%); /* Deep Blue Gradient */
+            border: 3px solid #60a5fa; /* Sky Blue Border */
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+        }
+        /* Effective value high contrast */
+        .effective-value {
+            font-size: 1.25rem; /* text-xl */
+            font-weight: 900; /* font-extrabold */
+            color: #34d399; /* Emerald Green */
+        }
+        .attribute-title {
+            color: #cbd5e1; /* Slate 300 */
+        }
+        /* Simple spinner for loading state - improved */
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 3px solid rgba(255,255,255,0.12);
+            border-top-color: currentColor;
+            animation: spin 0.9s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8 min-h-screen">
+
+    <div class="max-w-xl mx-auto">
+        <h1 class="text-4xl font-black text-center mb-8 tracking-wider" style="color: #60a5fa;">
+            <span class="border-b-4 border-sky-500 pb-1">ATTRIBUTE MATRIX</span>
+        </h1>
+
+        <!-- Status & User ID Display -->
+        <div class="mb-6 p-3 card bg-opacity-70 border-sky-500 border-opacity-30 text-sm text-gray-200">
+            <p id="status-message" class="font-bold text-sky-300">Initializing connection...</p>
+            <p class="mt-1 break-words text-xs">Auth ID: <span id="user-id-display" class="font-mono text-xs text-indigo-400">Loading...</span></p>
+        </div>
+
+        <!-- Input Card -->
+        <div class="card p-6 mb-8">
+            <h2 class="text-xl font-bold text-gray-100 mb-4 border-b border-gray-600 pb-2">Modify Base Allocation</h2>
+
+            <form id="stats-form" class="space-y-4">
+                <div class="flex flex-col space-y-4">
+
+                    <!-- Level -->
+                    <label for="Level" class="block text-sm font-bold attribute-title">Level (Max 999)</label>
+                    <input type="number" id="Level" name="Level" min="1" max="999" value="1" required class="stat-input mt-1 block w-full p-3 border rounded-lg focus:ring-sky-500 focus:border-sky-500 shadow-xl">
+                    
+                    <!-- Mind (Base) -->
+                    <label for="Mind" class="block text-sm font-bold attribute-title">Mind (Base Stat)</label>
+                    <input type="number" id="Mind" name="Mind" min="1" max="99" value="10" required class="stat-input mt-1 block w-full p-3 border rounded-lg focus:ring-sky-500 focus:border-sky-500 shadow-xl">
+
+                    <!-- Spirit (Base) -->
+                    <label for="Spirit" class="block text-sm font-bold attribute-title">Spirit (Base Stat)</label>
+                    <input type="number" id="Spirit" name="Spirit" min="1" max="99" value="10" required class="stat-input mt-1 block w-full p-3 border rounded-lg focus:ring-sky-500 focus:border-sky-500 shadow-xl">
+
+                    <!-- Constitution (Base) -->
+                    <label for="Constitution" class="block text-sm font-bold attribute-title">Constitution (Base Stat)</label>
+                    <input type="number" id="Constitution" name="Constitution" min="1" max="99" value="10" required class="stat-input mt-1 block w-full p-3 border rounded-lg focus:ring-sky-500 focus:border-sky-500 shadow-xl">
+                    
+                    <!-- Strength (Base) -->
+                    <label for="Strength" class="block text-sm font-bold attribute-title">Strength (Base Stat)</label>
+                    <input type="number" id="Strength" name="Strength" min="1" max="99" value="10" required class="stat-input mt-1 block w-full p-3 border rounded-lg focus:ring-sky-500 focus:border-sky-500 shadow-xl">
+                    
+                    <!-- Speed (Base) -->
+                    <label for="Speed" class="block text-sm font-bold attribute-title">Speed (Base Stat)</label>
+                    <input type="number" id="Speed" name="Speed" min="1" max="99" value="10" required class="stat-input mt-1 block w-full p-3 border rounded-lg focus:ring-sky-500 focus:border-sky-500 shadow-xl">
+                </div>
+
+                <button type="submit" id="save-button" class="w-full py-3 px-4 mt-6 border border-transparent rounded-lg shadow-lg text-lg font-extrabold text-white bg-green-500 hover:bg-green-600 focus:outline-none focus:ring-4 focus:ring-green-400 focus:ring-opacity-70 transition duration-150 ease-in-out">
+                    SAVE ATTRIBUTES TO MATRIX
+                </button>
+            </form>
+        </div>
+
+        <!-- Display Card -->
+        <div class="card p-6">
+            <h2 class="text-xl font-bold text-gray-100 mb-4 border-b border-gray-600 pb-2">Effective Stat Summary</h2>
+            
+            <!-- Power Level Display -->
+            <div id="power-level-display" class="power-level-display p-4 mb-6 rounded-xl text-center shadow-2xl">
+                <p class="text-sm font-semibold text-sky-200">TOTAL COMBAT POWER LEVEL</p>
+                <p class="text-6xl font-black text-yellow-300 tracking-widest" id="power-level-value">0</p>
+                <p class="text-xs text-sky-200 opacity-75">(Calculated using Effective Stats and Level)</p>
+            </div>
+            
+            <div id="stats-display" class="space-y-4">
+                <p class="text-gray-500 italic" id="initial-load-msg">Loading saved data...</p>
+                <!-- Stats will be inserted here -->
+            </div>
+
+            <!-- NEW: Gemini Features Section -->
+            <div class="mt-8 pt-4 border-t border-gray-700/50 space-y-4">
+                <h3 class="text-xl font-bold text-sky-400">LLM Analysis & Creation</h3>
+                
+                <button id="generate-lore-btn" class="w-full py-2 px-4 rounded-lg text-sm font-semibold text-white bg-purple-600 hover:bg-purple-700 transition duration-150 shadow-md flex items-center justify-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    Generate Lore & Persona ✨
+                </button>
+                
+                <button id="analyze-strategy-btn" class="w-full py-2 px-4 rounded-lg text-sm font-semibold text-white bg-red-600 hover:bg-red-700 transition duration-150 shadow-md flex items-center justify-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v14L9 19z"></path></svg>
+                    Analyze Combat Strategy 🔎
+                </button>
+
+                <!-- Results Area -->
+                <div id="result-area" class="hidden card p-4 mt-4 border-l-4 border-yellow-500">
+                    <h4 id="result-title" class="text-lg font-bold text-yellow-300 mb-2"></h4>
+                    <div id="result-content" class="text-gray-300 whitespace-pre-wrap"></div>
+                    <div id="result-citations" class="mt-4 text-xs text-gray-400 border-t border-gray-700 pt-2 hidden">
+                        <p class="font-semibold text-yellow-400">Sources:</p>
+                        <ul id="citation-list" class="list-disc ml-4 mt-1 space-y-1"></ul>
+                    </div>
+                </div>
+            </div>
+
+            <p id="last-updated" class="text-xs text-gray-400 mt-6 text-right"></p>
+        </div>
+    </div>
+
+    <!-- Supabase config (injected for local testing) -->
+    <script>
+        // WARNING: This exposes the anon key in the client. Only use for local testing.
+        window.__supabase_url = 'https://ufzwfcafbmbwszomnkqv.supabase.co';
+        window.__supabase_key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVmendmY2FmYm1id3N6b21ua3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU5MTUwNDYsImV4cCI6MjA4MTQ5MTA0Nn0.bsdKqMSNdMEWUAx7JRAtSEBdEFNdsW5eCE65eqmp54A';
+    </script>
+
+    <!-- Supabase & Gemini SDK Imports -->
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+        // --- Global Supabase & App Variables ---
+        // The page expects runtime globals: __supabase_url and __supabase_key (anon public key)
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const SUPABASE_URL = typeof __supabase_url !== 'undefined' ? __supabase_url : (typeof __supabase_url_env !== 'undefined' ? __supabase_url_env : null);
+        const SUPABASE_KEY = typeof __supabase_key !== 'undefined' ? __supabase_key : (typeof __supabase_key_env !== 'undefined' ? __supabase_key_env : null);
+
+        let supabase = null;
+        let userId = null; // will be auth user id if available, otherwise local anon id
+        let isDbReady = false;
+
+        const STATUS_MESSAGE = document.getElementById('status-message');
+        const USER_ID_DISPLAY = document.getElementById('user-id-display');
+        const STATS_FORM = document.getElementById('stats-form');
+        const STATS_DISPLAY = document.getElementById('stats-display');
+        const LAST_UPDATED = document.getElementById('last-updated');
+        const INITIAL_LOAD_MSG = document.getElementById('initial-load-msg');
+        const POWER_LEVEL_VALUE = document.getElementById('power-level-value');
+        
+        // NEW GEMINI ELEMENTS
+        const GENERATE_LORE_BTN = document.getElementById('generate-lore-btn');
+        const ANALYZE_STRATEGY_BTN = document.getElementById('analyze-strategy-btn');
+        const RESULT_AREA = document.getElementById('result-area');
+        const RESULT_TITLE = document.getElementById('result-title');
+        const RESULT_CONTENT = document.getElementById('result-content');
+        const RESULT_CITATIONS = document.getElementById('result-citations');
+        const CITATION_LIST = document.getElementById('citation-list');
+
+
+        const ATTRIBUTES = ['Level', 'Mind', 'Spirit', 'Constitution', 'Strength', 'Speed'];
+        const BASE_STATS = ['Mind', 'Spirit', 'Constitution', 'Strength', 'Speed'];
+
+        // Utility to display status messages
+        function showStatus(message, isError = false) {
+            STATUS_MESSAGE.textContent = message;
+            STATUS_MESSAGE.className = `font-bold ${isError ? 'text-red-400' : 'text-sky-300'}`;
+        }
+        
+        // --- Core Calculation Logic (Unchanged) ---
+
+        /**
+         * Calculates the total percentage multiplier based on level thresholds.
+         * Rules: 10% per level, +50% every 10, +130% every 25, +400% every 100.
+         */
+        function calculateMultiplier(level) {
+            if (level <= 1) return 0;
+            const L = level;
+            const L_minus_1 = L - 1;
+            
+            // Rule 1: 10% per level
+            let multiplier = 0.10 * L_minus_1; 
+
+            // Rule 2: 50% every 10 levels
+            multiplier += 0.50 * Math.floor(L_minus_1 / 10); 
+
+            // Rule 3: 130% every 25 levels
+            multiplier += 1.30 * Math.floor(L_minus_1 / 25); 
+
+            // Rule 4: 400% every 100 levels
+            multiplier += 4.00 * Math.floor(L_minus_1 / 100); 
+
+            return multiplier;
+        }
+
+        /**
+         * Calculates the Effective Stat value.
+         */
+        function calculateEffectiveStat(baseStat, level) {
+            // Handle case where base stat is 0 or NaN
+            if (isNaN(baseStat) || baseStat <= 0) return 0;
+            
+            const multiplier = calculateMultiplier(level);
+            // Effective Stat = Base Stat * (1 + Multiplier)
+            const effectiveStat = baseStat * (1 + multiplier);
+            // Round to 2 decimal places for display clarity
+            return Math.round(effectiveStat * 100) / 100; 
+        }
+
+        /**
+         * Calculates the Power Level using the effective stats.
+         * Formula: E_Mind + (L * E_Spirit) + (L * E_Constitution) + E_Strength + E_Speed
+         */
+        function calculatePowerLevel(data) {
+            const level = data.Level || 1; 
+
+            // Calculate effective stats first
+            const E_Mind = calculateEffectiveStat(data.Mind || 0, level);
+            const E_Spirit = calculateEffectiveStat(data.Spirit || 0, level);
+            const E_Constitution = calculateEffectiveStat(data.Constitution || 0, level);
+            const E_Strength = calculateEffectiveStat(data.Strength || 0, level);
+            const E_Speed = calculateEffectiveStat(data.Speed || 0, level);
+
+            // Apply the complex formula using the calculated effective values
+            const powerLevel = E_Mind + (level * E_Spirit) + (level * E_Constitution) + E_Strength + E_Speed;
+            
+            // Round final Power Level to nearest whole number
+            return Math.round(powerLevel); 
+        }
+
+
+        // --- NEW: Gemini API Functions ---
+
+        /**
+         * Utility function to handle the fetch request with exponential backoff.
+         */
+        async function geminiApiCall(userQuery, systemPrompt, useSearch = false) {
+            const apiKey = ""; // Canvas provides this dynamically; DO NOT embed your API key in client-side code for production
+            const model = 'gemini-2.5-flash-preview-09-2025';
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+            };
+
+            if (useSearch) {
+                payload.tools = [{ "google_search": {} }];
+            }
+
+            const MAX_RETRIES = 5;
+            let attempt = 0;
+
+            while (attempt < MAX_RETRIES) {
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (response.status === 429 && attempt < MAX_RETRIES - 1) {
+                        // Rate limit hit, apply exponential backoff
+                        const delay = Math.pow(2, attempt) * 1000 + Math.random() * 1000;
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        attempt++;
+                        continue; // Retry loop
+                    }
+
+                    if (!response.ok) {
+                        const errorBody = await response.json();
+                        throw new Error(`API call failed with status: ${response.status}. Details: ${errorBody.error?.message || 'No details provided.'}`);
+                    }
+
+                    const result = await response.json();
+                    const candidate = result.candidates?.[0];
+
+                    if (!candidate || !candidate.content?.parts?.[0]?.text) {
+                        throw new Error("Received invalid or empty response from API.");
+                    }
+
+                    // Extract text
+                    const text = candidate.content.parts[0].text;
+
+                    // Extract grounding sources
+                    let sources = [];
+                    const groundingMetadata = candidate.groundingMetadata;
+                    if (useSearch && groundingMetadata && groundingMetadata.groundingAttributions) {
+                        sources = groundingMetadata.groundingAttributions
+                            .map(attribution => ({
+                                uri: attribution.web?.uri,
+                                title: attribution.web?.title,
+                            }))
+                            .filter(source => source.uri && source.title);
+                    }
+                    
+                    return { text, sources };
+
+                } catch (error) {
+                    console.error("Attempt failed:", error);
+                    if (attempt < MAX_RETRIES - 1) {
+                        const delay = Math.pow(2, attempt) * 1000 + Math.random() * 1000;
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                    } else {
+                        throw new Error("Maximum retry attempts reached. API call failed.");
+                    }
+                    attempt++;
+                }
+            }
+            throw new Error("API call failed after all retries.");
+        }
+
+        // Function to display the LLM results
+        function displayResult(title, content, sources = []) {
+            RESULT_TITLE.textContent = title;
+            // The content should be pre-formatted by the LLM (e.g., using Markdown)
+            RESULT_CONTENT.textContent = content; 
+            RESULT_AREA.classList.remove('hidden');
+
+            CITATION_LIST.innerHTML = '';
+            if (sources && sources.length > 0) {
+                RESULT_CITATIONS.classList.remove('hidden');
+                sources.forEach(source => {
+                    const li = document.createElement('li');
+                    li.className = 'py-1';
+                    li.innerHTML = `<a href="${source.uri}" target="_blank" class="text-blue-400 hover:text-blue-300 underline">${source.title}</a>`;
+                    CITATION_LIST.appendChild(li);
+                });
+            } else {
+                RESULT_CITATIONS.classList.add('hidden');
+            }
+        }
+
+        // Utility to get current stat values from input fields
+        function getCurrentStatsFromInputs() {
+            const data = {};
+            let allValid = true;
+
+            ATTRIBUTES.forEach(attr => {
+                const input = document.getElementById(attr);
+                const value = parseInt(input.value, 10);
+                
+                // Perform quick validation check before calling API
+                let minVal = 1;
+                let maxVal = (attr === 'Level') ? 999 : 99; 
+                
+                if (isNaN(value) || value < minVal || value > maxVal) {
+                    showStatus(`Error: ${attr} must be a valid number between ${minVal} and ${maxVal} before running analysis.`, true);
+                    allValid = false;
+                    return;
+                }
+                data[attr] = value;
+            });
+
+            if (allValid && Object.keys(data).length > 0) {
+                return data;
+            }
+            return null;
+        }
+
+        /**
+         * Feature 1: Generates Character Lore
+         */
+        async function generateCharacterLore() {
+            const currentData = getCurrentStatsFromInputs();
+            if (!currentData) return;
+
+            const effectiveStats = {};
+            BASE_STATS.forEach(attr => {
+                effectiveStats[attr] = calculateEffectiveStat(currentData[attr], currentData.Level);
+            });
+
+            const statList = BASE_STATS.map(attr => `${attr}: ${effectiveStats[attr]}`).join(', ');
+
+            // Set UI state
+            showStatus("Generating character lore with LLM...", false);
+            RESULT_AREA.classList.remove('hidden');
+            RESULT_TITLE.textContent = "Generating Character Lore...";
+            RESULT_CONTENT.innerHTML = '<div class="text-center py-4 text-gray-400"><p>Processing data matrix...</p><div class="spinner text-purple-400 mx-auto mt-2"></div></div>';
+            RESULT_CITATIONS.classList.add('hidden');
+
+
+            const userQuery = `Using the following effective character stats, write a compelling, single-paragraph backstory and persona description for this character in a high-fantasy setting. The stats are: ${statList}. Focus on how the highest and lowest stats define their life and destiny.`;
+            
+            const systemPrompt = "You are a master RPG Game Master and Lore Creator. You craft short, epic descriptions based on quantitative stats. Respond only with the lore text, formatted with Markdown paragraphs.";
+
+            try {
+                const result = await geminiApiCall(userQuery, systemPrompt, false);
+
+                displayResult("Generated Character Persona & Lore", result.text);
+                showStatus("Character Lore generated successfully!");
+
+            } catch (error) {
+                console.error("Lore Generation Error:", error);
+                displayResult("Generation Error", `Failed to generate lore. Error: ${error.message}. Please try again.`);
+                showStatus("LLM Lore generation failed.", true);
+            }
+        }
+
+        /**
+         * Feature 2: Analyzes Combat Strategy (with search grounding)
+         */
+        async function analyzeCombatStrategy() {
+            const currentData = getCurrentStatsFromInputs();
+            if (!currentData) return;
+
+            const effectiveStats = {};
+            BASE_STATS.forEach(attr => {
+                effectiveStats[attr] = calculateEffectiveStat(currentData[attr], currentData.Level);
+            });
+
+            const statList = BASE_STATS.map(attr => `${attr}: ${effectiveStats[attr]}`).join(', ');
+
+            // Set UI state
+            showStatus("Analyzing combat strategy using LLM and real-world search grounding...", false);
+            RESULT_AREA.classList.remove('hidden');
+            RESULT_TITLE.textContent = "Analyzing Combat Strategy...";
+            RESULT_CONTENT.innerHTML = '<div class="text-center py-4 text-gray-400"><p>Consulting tactical databases...</p><div class="spinner text-red-400 mx-auto mt-2"></div></div>';
+            RESULT_CITATIONS.classList.add('hidden');
+
+            const userQuery = `Based on these effective stats: ${statList} and a total combat power level of ${calculatePowerLevel(currentData)}, what is the best high-level combat role (e.g., Tank, DPS, Support, Hybrid) and a suggested tactical deployment for this character in a modern competitive RPG or MOBA game? Provide a concise summary and concrete strategy suggestions.`;
+            
+            const systemPrompt = "You are a professional tactical game analyst. You MUST use Google Search grounding to find the latest combat meta for modern competitive games (like MOBA or RPGs) to inform your suggestion. Respond with the character's designated role and a concise, actionable strategy summary in a single text block.";
+
+            try {
+                const result = await geminiApiCall(userQuery, systemPrompt, true); // useSearch = true
+
+                displayResult("Combat Role & Strategy Analysis", result.text, result.sources);
+                showStatus("Combat Strategy Analysis complete!");
+
+            } catch (error) {
+                console.error("Strategy Analysis Error:", error);
+                displayResult("Analysis Error", `Failed to run analysis. Error: ${error.message}. Please try again.`);
+                showStatus("LLM Strategy analysis failed.", true);
+            }
+        }
+
+
+
+        // --- Supabase & UI Logic ---
+
+        // 1. Initialize Supabase and (optional) auth
+        function initSupabase() {
+            try {
+                if (!SUPABASE_URL || !SUPABASE_KEY) {
+                    showStatus('Error: Supabase configuration missing. Provide __supabase_url and __supabase_key globals.', true);
+                    USER_ID_DISPLAY.textContent = 'N/A';
+                    return;
+                }
+
+                supabase = createClient(SUPABASE_URL, SUPABASE_KEY, { realtime: { params: { eventsPerSecond: 10 } } });
+                isDbReady = true;
+
+                // Try to get authenticated user; if none, fall back to a local anon id
+                supabase.auth.getUser().then(({ data, error }) => {
+                    if (error) {
+                        console.warn('Supabase auth.getUser error:', error.message || error);
+                    }
+                    const user = data?.user || null;
+                    if (user && user.id) {
+                        userId = user.id;
+                        USER_ID_DISPLAY.textContent = userId;
+                        showStatus('Authenticated with Supabase. Matrix online.');
+                    } else {
+                        // Use persisted anon id
+                        let anon = localStorage.getItem('cc_anon_user_id');
+                        if (!anon) {
+                            anon = crypto.randomUUID();
+                            localStorage.setItem('cc_anon_user_id', anon);
+                        }
+                        userId = anon;
+                        USER_ID_DISPLAY.textContent = `${userId} (anon)`;
+                        showStatus('Using local anonymous ID. Sign in to enable server-side auth.');
+                    }
+
+                    // After determining userId, fetch initial data and set up realtime
+                    fetchAndSubscribe();
+                }).catch(err => {
+                    console.warn('auth.getUser failed:', err);
+                    let anon = localStorage.getItem('cc_anon_user_id');
+                    if (!anon) {
+                        anon = crypto.randomUUID();
+                        localStorage.setItem('cc_anon_user_id', anon);
+                    }
+                    userId = anon;
+                    USER_ID_DISPLAY.textContent = `${userId} (anon)`;
+                    showStatus('Using local anonymous ID.');
+                    fetchAndSubscribe();
+                });
+            } catch (error) {
+                console.error('Supabase initialization failed:', error);
+                showStatus(`Initialization Error: ${error.message}`, true);
+            }
+        }
+
+        // 2. Fetch latest stats from Supabase
+        async function fetchLatestStats() {
+            if (!isDbReady || !userId) return null;
+            try {
+                const { data, error } = await supabase
+                    .from('attributes')
+                    .select('*')
+                    .eq('user_id', userId)
+                    .eq('app_id', appId)
+                    .limit(1)
+                    .single();
+
+                if (error && error.code !== 'PGRST116') {
+                    // PGRST116 = The request returned no rows (single() with no rows)
+                    console.warn('Supabase select warning:', error.message);
+                }
+                return data || null;
+            } catch (err) {
+                console.error('Error fetching stats:', err);
+                showStatus(`Data Load Error: ${err.message}`, true);
+                return null;
+            }
+        }
+
+        // 3. Subscribe to realtime changes for this user's attributes
+        let attributesChannel = null;
+        async function fetchAndSubscribe() {
+            const latest = await fetchLatestStats();
+            updateUI(latest || {});
+            showStatus(latest ? 'Stats and Power Level retrieved from Supabase.' : 'No saved base stats found. Use the form to save your first set.');
+
+            // Unsubscribe previous
+            if (attributesChannel) {
+                try { await supabase.removeChannel(attributesChannel); } catch(e) { /* ignore */ }
+                attributesChannel = null;
+            }
+
+            // Listen for INSERT/UPDATE/DELETE on attributes where user_id and app_id match
+            attributesChannel = supabase.channel(`public:attributes:user:${userId}:${appId}`)
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'attributes', filter: `user_id=eq.${userId},app_id=eq.${appId}` }, (payload) => {
+                    // payload.eventType == INSERT|UPDATE|DELETE
+                    if (payload.eventType === 'DELETE') {
+                        updateUI({});
+                        showStatus('Attributes were removed from Supabase.');
+                    } else {
+                        updateUI(payload.new || {});
+                        showStatus('Stats updated from Supabase.');
+                    }
+                })
+                .subscribe();
+        }
+
+        // 4. Update UI with Data (the existing updateUI function remains unchanged)
+
+        // 1. Initialize Firebase and Handle Authentication
+        async function initFirebaseAndAuth() {
+            try {
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        USER_ID_DISPLAY.textContent = userId;
+                        isAuthReady = true;
+                        showStatus("Authentication successful. Matrix online.");
+                        setupSnapshotListener();
+                    } else {
+                        if (initialAuthToken) {
+                            // Use custom token if provided
+                            await signInWithCustomToken(auth, initialAuthToken);
+                        } else {
+                            // Fallback to anonymous sign-in
+                            await signInAnonymously(auth);
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error("Firebase initialization or authentication failed:", error);
+                showStatus(`Initialization Error: ${error.message}`, true);
+            }
+        }
+
+        // 2. Setup Real-time Data Listener
+        function setupSnapshotListener() {
+            if (!db || !userId || !isAuthReady) {
+                console.warn("Firestore not ready. Cannot set up listener.");
+                return;
+            }
+
+            // Path: /artifacts/{appId}/users/{userId}/attributes/stats
+            const docRef = doc(db, 'artifacts', appId, 'users', userId, 'attributes', 'stats');
+
+            onSnapshot(docRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    updateUI(docSnap.data());
+                    showStatus("Stats and Power Level retrieved from the Matrix.");
+                } else {
+                    updateUI({});
+                    showStatus("No saved base stats found. Use the form to save your first set.");
+                }
+            }, (error) => {
+                console.error("Firestore snapshot error:", error);
+                showStatus(`Data Load Error: ${error.message}`, true);
+            });
+        }
+
+        // 3. Update UI with Data
+        function updateUI(data) {
+            STATS_DISPLAY.innerHTML = '';
+            INITIAL_LOAD_MSG.classList.add('hidden');
+            let hasData = false;
+            
+            // Retrieve or default Level
+            const level = data.Level || 1; 
+
+            // 3a. Update Power Level
+            const powerLevel = calculatePowerLevel(data);
+            POWER_LEVEL_VALUE.textContent = powerLevel.toLocaleString();
+
+            // 3b. Update individual stats
+            
+            // Update the Level input field
+            const levelInput = document.getElementById('Level');
+            if (levelInput) {
+                // Always update the input field with the latest saved data (or default)
+                levelInput.value = data.Level !== undefined ? data.Level : 1; 
+            }
+
+            // First, display the Level
+            const levelDisplay = document.createElement('div');
+            levelDisplay.className = 'text-2xl font-black text-sky-400 flex justify-between border-b border-sky-600 pb-2 mb-4';
+            levelDisplay.innerHTML = `
+                <span>CURRENT LEVEL:</span>
+                <span class="text-yellow-300">${level}</span>
+            `;
+            STATS_DISPLAY.appendChild(levelDisplay);
+
+            BASE_STATS.forEach(attr => {
+                // Get the base value, default to 0 if not present for calculation consistency
+                const baseValue = data[attr] !== undefined ? data[attr] : 0; 
+                
+                // Update input field with loaded base value
+                const inputElement = document.getElementById(attr);
+                if (inputElement) {
+                    // Update input field with latest saved data (or default)
+                    inputElement.value = data[attr] !== undefined ? data[attr] : 10; 
+                }
+
+                if (data[attr] !== undefined) {
+                    hasData = true;
+                    const effectiveValue = calculateEffectiveStat(baseValue, level);
+
+                    const displayItem = document.createElement('div');
+                    displayItem.className = 'flex flex-col md:flex-row md:justify-between items-start md:items-center p-2 bg-gray-700/30 rounded-lg shadow-inner';
+                    displayItem.innerHTML = `
+                        <div class="flex flex-col">
+                            <span class="font-bold text-gray-300 text-lg">${attr}</span>
+                            <span class="text-sm text-gray-400">Base: ${baseValue}</span>
+                        </div>
+                        <div class="mt-2 md:mt-0">
+                            <span class="text-sm text-sky-300 mr-2">Effective:</span>
+                            <span class="effective-value">${effectiveValue.toLocaleString()}</span>
+                        </div>
+                    `;
+                    STATS_DISPLAY.appendChild(displayItem);
+                }
+            });
+            
+            if (!hasData && level === 1) { // Only show message if no stats AND default level
+                STATS_DISPLAY.innerHTML += '<p class="text-gray-500 italic mt-4 text-center">Data Matrix empty. Waiting for primary input...</p>';
+            }
+
+            // 3c. Update timestamp
+            if (data.updatedAt) {
+                let timestamp = data.updatedAt.toDate ? data.updatedAt.toDate() : new Date(data.updatedAt);
+                LAST_UPDATED.textContent = `Last Transmission: ${timestamp.toLocaleString()}`;
+            } else {
+                LAST_UPDATED.textContent = '';
+            }
+        }
+
+        // 5. Handle Form Submission and Save Data (upsert into Supabase)
+        async function saveStats(event) {
+            event.preventDefault();
+            if (!isDbReady || !userId) {
+                showStatus('Error: Matrix not initialized. Please wait for initialization.', true);
+                return;
+            }
+
+            try {
+                const formData = new FormData(STATS_FORM);
+                const payload = {};
+                let isValid = true;
+
+                ATTRIBUTES.forEach(attr => {
+                    let minVal = 1;
+                    let maxVal = (attr === 'Level') ? 999 : 99;
+
+                    const value = parseInt(formData.get(attr), 10);
+                    if (isNaN(value) || value < minVal || value > maxVal) {
+                        isValid = false;
+                        showStatus(`Error: ${attr} must be a number between ${minVal} and ${maxVal}.`, true);
+                    }
+                    payload[attr.toLowerCase()] = value;
+                });
+
+                if (!isValid) return;
+
+                // Prepare upsert row
+                const row = {
+                    app_id: appId,
+                    user_id: userId,
+                    level: payload.level || 1,
+                    mind: payload.mind || 0,
+                    spirit: payload.spirit || 0,
+                    constitution: payload.constitution || 0,
+                    strength: payload.strength || 0,
+                    speed: payload.speed || 0,
+                    updated_at: new Date().toISOString()
+                };
+
+                const { data, error } = await supabase.from('attributes').upsert(row, { returning: 'representation' });
+                if (error) {
+                    throw error;
+                }
+
+                showStatus('Base Stats and Level uploaded successfully!');
+            } catch (error) {
+                console.error('Error saving to Supabase:', error);
+                showStatus(`Save Error: ${error.message || error}`, true);
+            }
+        }
+
+        // 6. Initial App Load
+        window.onload = function() {
+            if (!SUPABASE_URL || !SUPABASE_KEY) {
+                showStatus('Error: Supabase configuration is missing. Matrix cannot initialize.', true);
+                USER_ID_DISPLAY.textContent = 'N/A';
+                return;
+            }
+            initSupabase();
+            STATS_FORM.addEventListener('submit', saveStats);
+
+            // Attach event listeners for LLM features
+            GENERATE_LORE_BTN.addEventListener('click', generateCharacterLore);
+            ANALYZE_STRATEGY_BTN.addEventListener('click', analyzeCombatStrategy);
+        };
+
+        // 5. Initial App Load
+        window.onload = function() {
+            if (Object.keys(firebaseConfig).length === 0) {
+                showStatus("Error: Firebase configuration is missing. Matrix cannot initialize.", true);
+                USER_ID_DISPLAY.textContent = 'N/A';
+                return;
+            }
+            initFirebaseAndAuth();
+            STATS_FORM.addEventListener('submit', saveStats);
+            
+            // Attach event listeners for LLM features
+            GENERATE_LORE_BTN.addEventListener('click', generateCharacterLore);
+            ANALYZE_STRATEGY_BTN.addEventListener('click', analyzeCombatStrategy);
+        };
+
+    </script>
+</body>
+</html>
